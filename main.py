@@ -19,58 +19,62 @@ class Resnet_torch(torch.nn.Module):
 	def forward(self, x):
 		return x
 
-def model_torch():
-	return Resnet_torch()
+class resnet_9(tf.keras.Model):
+	def __init__(self):
+		pass
+	def call(self,x):
+		return x
 
-def model_tf():
-	return Resnet_tf()
+def model_9(lang=args.model):
+	if lang=='tf':
+		return resnet_9(lang)
 
 def main(args):
 	if args.model=='tf':
 		print('Model Resnet_'+str(args.depth)+' will be created in Tensorflow')
 		if args.depth=='9':
-			model = model_tf_9()
+			model = model_9(args.model)
 			model.build(input_shape=(None,224,224,3))
 			model.summary()
 		elif args.depth=='18':
-			model = model_tf_18()
+			model = model_18(args.model)
 			model.build(input_shape=(None,224,224,3))
 			model.summary()
 		elif args.depth=='34':
-			model = model_tf_34()
+			model = model_34(args.model)
 			model.build(input_shape=(None,224,224,3))
 			model.summary()
 		elif args.depth=='50':
-			model = model_tf_50()
+			model = model_50(args.model)
 			model.build(input_shape=(None,224,224,3))
 			model.summary()
 		elif args.depth=='101':
-			model = model_tf_101()
+			model = model_101(args.model)
 			model.build(input_shape=(None,224,224,3))
 			model.summary()
 		elif args.depth=='152':
-			model = model_tf_152()
+			model = model_152(args.model)
 			model.build(input_shape=(None,224,224,3))
 			model.summary()
 	else:
 		print('Model Resnet_'+str(args.depth)+' will be created in Pytorch')
 		if args.depth=='9':
-			model = model_torch9()
+			model = model_9(model.args)
 			print(model)
 		elif args.depth=='18':
-			model = model_torch18()
+			model = model_18(model.args)
 			print(model)
 		elif args.depth=='34':
-			model = model_torch34()
+			model = model_34(model.args)
 			print(model)
 		elif args.depth=='50':
-			model = model_torch50()
+			model = model_50(model.args)
 			print(model)
 		elif args.depth=='101':
-			model = model_torch101()
+			model = model_101(model.args)
 			print(model)
 		elif args.depth=='152':
-			model = model_torch152()
+			model = model_152(model.args)
 			print(model)
 
 if __name__ == '__main__':
