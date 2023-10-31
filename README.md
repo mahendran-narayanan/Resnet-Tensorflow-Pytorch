@@ -32,3 +32,5 @@ For CIFAR-10 and CIFAR-100 dataset:
 ```
 python3 main.py --model tf --depth 44 --dataset cifar10
 ```
+
+Residual network for CIFAR-1O designed according to the (ResNet paper)[https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html]
