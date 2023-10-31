@@ -132,26 +132,6 @@ def main(modeltype, depth):
 		model = Resnet_tf(depth)
 		model.build(input_shape=(None,224,224,3))
 		model.summary()
-		# elif depth=='18':
-		# 	model = model_18(modeltype)
-		# 	model.build(input_shape=(None,224,224,3))
-		# 	model.summary()
-		# elif depth=='34':
-		# 	model = model_34(modeltype)
-		# 	model.build(input_shape=(None,224,224,3))
-		# 	model.summary()
-		# elif depth=='50':
-		# 	model = model_50(modeltype)
-		# 	model.build(input_shape=(None,224,224,3))
-		# 	model.summary()
-		# elif depth=='101':
-		# 	model = model_101(modeltype)
-		# 	model.build(input_shape=(None,224,224,3))
-		# 	model.summary()
-		# elif depth=='152':
-		# 	model = model_152(modeltype)
-		# 	model.build(input_shape=(None,224,224,3))
-		# 	model.summary()
 	else:
 		print('Model Resnet_'+str(depth)+' will be created in Pytorch')
 		if depth=='9':
