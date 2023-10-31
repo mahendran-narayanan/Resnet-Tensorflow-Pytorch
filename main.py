@@ -2,33 +2,6 @@ import argparse
 import tensorflow as tf
 import torch
 
-# def conv_block(layer, kernels,kernelsize,stride,pad,name):
-# 	layer = []
-# 	layer.append(tf.keras.layers.Conv2D(kernels,kernelsize,strides=stride,padding=pad))
-# 	layer.append(tf.keras.layers.BatchNormalization())
-# 	layer.append(tf.keras.layers.ReLU())
-# 	return tf.keras.Sequential(layer,name='conv_bn_relu_'+str(name))
-
-# def blocko(kernels,temp):
-# 	layer = []
-# 	for i in range(temp):
-# 		layer.append(tf.keras.layers.Conv2D(kernels,3,strides=1,padding='SAME'))
-# 		layer.append(tf.keras.layers.BatchNormalization())
-# 		layer.append(tf.keras.layers.ReLU())
-# 	# return conv_block(layer,32,3,1,'SAME','as')
-# 	return tf.keras.Sequential(layer,name='conv_bn_relu_'+str('as'))
-
-# class part_block(tf.keras.Model):
-# 	def __init__(self,kernels,kernelsize,stride):
-# 		super().__init__()
-# 		self.conv = tf.keras.layers.Conv2D(kernels, kernelsize, strides=stride,padding=pad)
-# 		self.bn = tf.keras.layers.BatchNormalization()
-# 		self.act = tf.keras.layers.ReLU()
-# 	def call(self,x):
-# 		x = self.conv(x)
-# 		x = self.bn(x)
-# 		x = self.act(x)
-# 		return x
 class block(tf.keras.Model):
 	def __init__(self,kernels,shortcut=False):
 		super().__init__()
@@ -49,14 +22,7 @@ class block(tf.keras.Model):
 		self.l33 = tf.keras.layers.ReLU()
 
 		self.add = tf.keras.layers.Add()
-
-		# self.block1 = part_block(kernels,1,1)
-		# self.block2 = part_block(kernels,3,stride=1,pad='SAME')
-		# self.block3 = part_block(4*kernels,1,1)
 	def call(self,x):
-		# x = self.block1(x)
-		# x = self.block2(x)
-		# x = self.block3(x)
 		if self.sh==True:
 			sh_res = self.sh2(self.sh1(x))
 		x = self.l3(self.l2(self.l1(x)))
@@ -128,7 +94,6 @@ class Resnet_tf(tf.keras.Model):
 def main(modeltype, depth):
 	if modeltype=='tf':
 		print('Model Resnet_'+str(depth)+' will be created in Tensorflow')
-		# if depth=='9':
 		model = Resnet_tf(depth)
 		model.build(input_shape=(None,224,224,3))
 		model.summary()
@@ -161,7 +126,7 @@ if __name__ == '__main__':
 	                    help='Model will be created on Tensorflow, Pytorch (default: %(default)s)')
 	parser.add_argument('--depth',
 	                    default='50',
-	                    choices=['9', '18', '34', '50', '101', '152'],
+	                    choices=['9', '18', '50', '101', '152'],
 	                    help='Resnet model depth (default: %(default)s)')
 	args = parser.parse_args()
 	print('args model ',args.model)
