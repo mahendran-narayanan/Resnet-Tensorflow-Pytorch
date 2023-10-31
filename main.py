@@ -47,6 +47,8 @@ class Resnet_tf(tf.keras.Model):
 			self.select = [3,8,36,3]
 		elif depth=='200':
 			self.select = [3,24,36,3]
+		elif depth=='1000':
+			self.select = [3,24,36,3]
 		else:
 			print("please select mentioned depth")
 		self.initial = tf.keras.layers.Conv2D(64,7,strides=2)
@@ -93,11 +95,60 @@ class Resnet_tf(tf.keras.Model):
 		x = self.dense(x)
 		return x
 
-def main(modeltype, depth):
+class Resnet_cifar(tf.keras.Model):
+	def __init__(self, depth):
+		super().__init__()
+		if depth=='20':
+			self.select = [7,6,6]
+		elif depth=='32':
+			self.select = [11,10,10]
+		else:
+			print("please select mentioned depth")
+		self.initial = tf.keras.layers.Conv2D(64,7,strides=2)
+		self.bn = tf.keras.layers.BatchNormalization()
+		self.act = tf.keras.layers.ReLU()
+		self.block1 = []
+		self.block2 = []
+		self.block3 = []
+		for i in range(self.select[0]):
+			if i==0:
+				self.block1.append(block(16,True))
+			else:
+				self.block1.append(block(16))
+		for i in range(self.select[1]):
+			if i==0:
+				self.block2.append(block(32,True))
+			else:
+				self.block2.append(block(32))
+		for i in range(self.select[2]):
+			if i==0:
+				self.block3.append(block(64,True))
+			else:
+				self.block3.append(block(64))
+		self.avgpool = tf.keras.layers.GlobalAveragePooling2D()
+		self.dense = tf.keras.layers.Dense(10,activation='softmax')
+	def call(self,x):
+		x = self.initial(x)
+		x = self.act(self.bn(x))
+		for i in range(self.select[0]):
+			x = self.block1[i](x)
+		for i in range(self.select[1]):
+			x = self.block2[i](x)
+		for i in range(self.select[2]):
+			x = self.block3[i](x)
+		x = self.avgpool(x)
+		x = self.dense(x)
+		return x
+
+def main(modeltype, depth,dataset):
 	if modeltype=='tf':
 		print('Model Resnet_'+str(depth)+' will be created in Tensorflow')
-		model = Resnet_tf(depth)
-		model.build(input_shape=(None,224,224,3))
+		if dataset=='imagenet':
+			model = Resnet_tf(depth)
+			model.build(input_shape=(None,224,224,3))
+		elif dataset == 'cifar10':
+			model = Resnet_cifar(depth)
+			model.build(input_shape=(None,32,32,3))
 		model.summary()
 	else:
 		print('Model Resnet_'+str(depth)+' will be created in Pytorch')
@@ -113,8 +164,12 @@ if __name__ == '__main__':
 	                    help='Model will be created on Tensorflow, Pytorch (default: %(default)s)')
 	parser.add_argument('--depth',
 	                    default='50',
-	                    choices=['9', '18', '50', '101', '152','200'],
+	                    choices=['9', '18', '20', '32', '50', '101', '152','200'],
 	                    help='Resnet model depth (default: %(default)s)')
+	parser.add_argument('--dataset',
+	                    default='imagenet',
+	                    choices=['imagenet', 'cifar10'],
+	                    help='Imagenet depth (Default) : 9|18|50|101|152|200\n CIFAR10: 20|32|44|56')
 	args = parser.parse_args()
 	print('args model ',args.model)
-	main(modeltype = args.model,depth = args.depth)
+	main(modeltype = args.model,depth = args.depth,dataset = args.dataset)
