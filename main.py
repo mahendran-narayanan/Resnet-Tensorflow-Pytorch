@@ -104,6 +104,8 @@ class Resnet_cifar(tf.keras.Model):
 			self.select = [11,10,10]
 		elif depth=='44':
 			self.select = [15,14,14]
+		elif depth=='56':
+			self.select = [19,18,18]
 		else:
 			print("please select mentioned depth")
 		self.initial = tf.keras.layers.Conv2D(64,7,strides=2)
@@ -166,7 +168,7 @@ if __name__ == '__main__':
 	                    help='Model will be created on Tensorflow, Pytorch (default: %(default)s)')
 	parser.add_argument('--depth',
 	                    default='50',
-	                    choices=['9', '18', '20', '32', '44', '50', '101', '152','200'],
+	                    choices=['9', '18', '20', '32', '44', '50', '56', '101', '152','200'],
 	                    help='Resnet model depth (default: %(default)s)')
 	parser.add_argument('--dataset',
 	                    default='imagenet',
