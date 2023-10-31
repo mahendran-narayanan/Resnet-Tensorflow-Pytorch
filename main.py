@@ -2,18 +2,69 @@ import argparse
 import tensorflow as tf
 import torch
 
-def conv_block(layer, kernels,kernelsize,stride,pad,name):
-	layer = []
-	layer.append(tf.keras.layers.Conv2D(kernels,kernelsize,strides=stride,padding=pad))
-	layer.append(tf.keras.layers.BatchNormalization())
-	layer.append(tf.keras.layers.ReLU())
-	return tf.keras.Sequential(layer,name='conv_bn_relu_'+str(name))
+# def conv_block(layer, kernels,kernelsize,stride,pad,name):
+# 	layer = []
+# 	layer.append(tf.keras.layers.Conv2D(kernels,kernelsize,strides=stride,padding=pad))
+# 	layer.append(tf.keras.layers.BatchNormalization())
+# 	layer.append(tf.keras.layers.ReLU())
+# 	return tf.keras.Sequential(layer,name='conv_bn_relu_'+str(name))
 
-def block(temp):
-	# layer = []
-	# for i in range(temp):
-	return conv_block(layer,32,3,1,'SAME','as')
-	# return tf.keras.Sequential(layer,name='conv_bn_relu_'+str('as'))
+# def blocko(kernels,temp):
+# 	layer = []
+# 	for i in range(temp):
+# 		layer.append(tf.keras.layers.Conv2D(kernels,3,strides=1,padding='SAME'))
+# 		layer.append(tf.keras.layers.BatchNormalization())
+# 		layer.append(tf.keras.layers.ReLU())
+# 	# return conv_block(layer,32,3,1,'SAME','as')
+# 	return tf.keras.Sequential(layer,name='conv_bn_relu_'+str('as'))
+
+# class part_block(tf.keras.Model):
+# 	def __init__(self,kernels,kernelsize,stride):
+# 		super().__init__()
+# 		self.conv = tf.keras.layers.Conv2D(kernels, kernelsize, strides=stride,padding=pad)
+# 		self.bn = tf.keras.layers.BatchNormalization()
+# 		self.act = tf.keras.layers.ReLU()
+# 	def call(self,x):
+# 		x = self.conv(x)
+# 		x = self.bn(x)
+# 		x = self.act(x)
+# 		return x
+class block(tf.keras.Model):
+	def __init__(self,kernels,shortcut=False):
+		super().__init__()
+		self.sh = shortcut
+		if shortcut==True:
+			self.sh1 = tf.keras.layers.Conv2D(4 * kernels, 1, strides=2)
+			self.sh2 = tf.keras.layers.BatchNormalization()
+		self.l1 = tf.keras.layers.Conv2D(kernels, 1,strides=2)
+		self.l2 = tf.keras.layers.BatchNormalization()
+		self.l3 = tf.keras.layers.ReLU()
+
+		self.l21 = tf.keras.layers.Conv2D(kernels, 3, strides=1,padding='SAME')
+		self.l22 = tf.keras.layers.BatchNormalization()
+		self.l23 = tf.keras.layers.ReLU()
+
+		self.l31 = tf.keras.layers.Conv2D(4 * kernels, 1)
+		self.l32 = tf.keras.layers.BatchNormalization()
+		self.l33 = tf.keras.layers.ReLU()
+
+		self.add = tf.keras.layers.Add()
+
+		# self.block1 = part_block(kernels,1,1)
+		# self.block2 = part_block(kernels,3,stride=1,pad='SAME')
+		# self.block3 = part_block(4*kernels,1,1)
+	def call(self,x):
+		# x = self.block1(x)
+		# x = self.block2(x)
+		# x = self.block3(x)
+		if self.sh==True:
+			sh_res = self.sh2(self.sh1(x))
+		x = self.l3(self.l2(self.l1(x)))
+		x = self.l23(self.l22(self.l21(x)))
+		x = self.l33(self.l32(self.l31(x)))
+		if self.sh==True:
+			x = self.add([sh_res,x])
+		return x
 
 class Resnet_tf(tf.keras.Model):
 	def __init__(self, depth):
@@ -22,8 +73,6 @@ class Resnet_tf(tf.keras.Model):
 			self.select = [1,1,1,1]
 		elif depth=='18':
 			self.select = [2,2,2,2]
-		elif depth=='34':
-			self.select = [3,4,6,3]
 		elif depth=='50':
 			self.select = [3,4,6,3] # Default depth : 50
 		elif depth=='101':
@@ -32,24 +81,57 @@ class Resnet_tf(tf.keras.Model):
 			self.select = [3,8,36,3]
 		else:
 			print("please select mentioned depth")
-		self.block1 = block(self.select[0])
-		self.block2 = block(self.select[1])
-		self.block3 = block(self.select[2])
-		self.block4 = block(self.select[3])
+		self.initial = tf.keras.layers.Conv2D(64,7,strides=2)
+		self.bn = tf.keras.layers.BatchNormalization()
+		self.act = tf.keras.layers.ReLU()
+		self.block1 = []
+		self.block2 = []
+		self.block3 = []
+		self.block4 = []
+		for i in range(self.select[0]):
+			if i==0:
+				self.block1.append(block(64,True))
+			else:
+				self.block1.append(block(64))
+		for i in range(self.select[1]):
+			if i==0:
+				self.block2.append(block(128,True))
+			else:
+				self.block2.append(block(128))
+		for i in range(self.select[2]):
+			if i==0:
+				self.block3.append(block(256,True))
+			else:
+				self.block3.append(block(256))
+		for i in range(self.select[3]):
+			if i==0:
+				self.block4.append(block(512,True))
+			else:
+				self.block4.append(block(512))
+		self.avgpool = tf.keras.layers.GlobalAveragePooling2D()
+		self.dense = tf.keras.layers.Dense(1000,activation='softmax')
 	def call(self,x):
-		x = self.block1(x)
-		x = self.block2(x)
-		x = self.block3(x)
-		x = self.block4(x)
+		x = self.initial(x)
+		x = self.act(self.bn(x))
+		for i in range(self.select[0]):
+			x = self.block1[i](x)
+		for i in range(self.select[1]):
+			x = self.block2[i](x)
+		for i in range(self.select[2]):
+			x = self.block3[i](x)
+		for i in range(self.select[3]):
+			x = self.block4[i](x)
+		x = self.avgpool(x)
+		x = self.dense(x)
 		return x
 
 def main(modeltype, depth):
 	if modeltype=='tf':
 		print('Model Resnet_'+str(depth)+' will be created in Tensorflow')
-		if depth=='9':
-			model = Resnet_tf(depth)
-			model.build(input_shape=(None,224,224,3))
-			model.summary()
+		# if depth=='9':
+		model = Resnet_tf(depth)
+		model.build(input_shape=(None,224,224,3))
+		model.summary()
 		# elif depth=='18':
 		# 	model = model_18(modeltype)
 		# 	model.build(input_shape=(None,224,224,3))
