@@ -45,6 +45,8 @@ class Resnet_tf(tf.keras.Model):
 			self.select = [3,4,23,3]
 		elif depth=='152':
 			self.select = [3,8,36,3]
+		elif depth=='200':
+			self.select = [3,24,36,3]
 		else:
 			print("please select mentioned depth")
 		self.initial = tf.keras.layers.Conv2D(64,7,strides=2)
@@ -111,7 +113,7 @@ if __name__ == '__main__':
 	                    help='Model will be created on Tensorflow, Pytorch (default: %(default)s)')
 	parser.add_argument('--depth',
 	                    default='50',
-	                    choices=['9', '18', '50', '101', '152'],
+	                    choices=['9', '18', '50', '101', '152','200'],
 	                    help='Resnet model depth (default: %(default)s)')
 	args = parser.parse_args()
 	print('args model ',args.model)
