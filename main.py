@@ -102,21 +102,6 @@ def main(modeltype, depth):
 		if depth=='9':
 			model = model_9(modeltype)
 			print(model)
-		# elif depth=='18':
-		# 	model = model_18(modeltype)
-		# 	print(model)
-		# elif depth=='34':
-		# 	model = model_34(modeltype)
-		# 	print(model)
-		# elif depth=='50':
-		# 	model = model_50(modeltype)
-		# 	print(model)
-		# elif depth=='101':
-		# 	model = model_101(modeltype)
-		# 	print(model)
-		# elif depth=='152':
-		# 	model = model_152(modeltype)
-		# 	print(model)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Create Resnet model in Tensorflow or Pytorch')
